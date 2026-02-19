@@ -19,6 +19,37 @@ export function validateBooking(input: CreateBookingInput): void {
     throw new Error('Check-out date is required');
   }
 
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+  if (!dateRegex.test(input.check_in)) {
+    throw new Error('Check-in date must be in YYYY-MM-DD format');
+  }
+
+  if (!dateRegex.test(input.check_out)) {
+    throw new Error('Check-out date must be in YYYY-MM-DD format');
+  }
+
+  const checkInDate = new Date(input.check_in + 'T00:00:00');
+  if (isNaN(checkInDate.getTime())) {
+    throw new Error('Check-in date is not a valid date');
+  }
+
+  const checkOutDate = new Date(input.check_out + 'T00:00:00');
+  if (isNaN(checkOutDate.getTime())) {
+    throw new Error('Check-out date is not a valid date');
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (checkInDate < today) {
+    throw new Error('Check-in date must be today or later');
+  }
+
+  if (checkOutDate <= checkInDate) {
+    throw new Error('Check-out date must be after the check-in date');
+  }
+
   if (!input.room_id) {
     throw new Error('Room ID is required');
   }
