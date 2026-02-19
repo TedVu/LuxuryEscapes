@@ -65,6 +65,15 @@ export function createBooking(input: CreateBookingInput): Booking {
     throw new Error('Room not found');
   }
 
+  // Check for overlapping bookings
+  const overlap = db.prepare(`
+    SELECT id FROM bookings
+    WHERE room_id = ? AND check_in < ? AND check_out > ?
+  `).get(input.room_id, input.check_out, input.check_in);
+  if (overlap) {
+    throw new Error('These dates overlap with an existing booking for this room');
+  }
+
   // Insert the booking
   const stmt = db.prepare(`
     INSERT INTO bookings (room_id, guest_name, guest_email, check_in, check_out)

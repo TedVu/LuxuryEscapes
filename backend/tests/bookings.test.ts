@@ -128,3 +128,106 @@ describe('Booking Validation', () => {
     }).toThrow('Room not found');
   });
 });
+
+describe('Overlapping Booking Validation', () => {
+  const checkIn = addDays(today, 3);
+  const checkOut = addDays(today, 7);
+
+  // Seed an existing booking before each test in this suite
+  beforeEach(() => {
+    createBooking({
+      room_id: 1,
+      guest_name: 'Existing Guest',
+      guest_email: 'existing@example.com',
+      check_in: formatDate(checkIn),
+      check_out: formatDate(checkOut),
+    });
+  });
+
+  it('should reject a booking that fully overlaps an existing booking', () => {
+    expect(() => {
+      createBooking({
+        room_id: 1,
+        guest_name: 'New Guest',
+        guest_email: 'new@example.com',
+        check_in: formatDate(checkIn),
+        check_out: formatDate(checkOut),
+      });
+    }).toThrow('overlap');
+  });
+
+  it('should reject a booking that starts during an existing booking', () => {
+    expect(() => {
+      createBooking({
+        room_id: 1,
+        guest_name: 'New Guest',
+        guest_email: 'new@example.com',
+        check_in: formatDate(addDays(checkIn, 1)),
+        check_out: formatDate(addDays(checkOut, 3)),
+      });
+    }).toThrow('overlap');
+  });
+
+  it('should reject a booking that ends during an existing booking', () => {
+    expect(() => {
+      createBooking({
+        room_id: 1,
+        guest_name: 'New Guest',
+        guest_email: 'new@example.com',
+        check_in: formatDate(addDays(checkIn, -2)),
+        check_out: formatDate(addDays(checkIn, 2)),
+      });
+    }).toThrow('overlap');
+  });
+
+  it('should reject a booking that wraps around an existing booking', () => {
+    expect(() => {
+      createBooking({
+        room_id: 1,
+        guest_name: 'New Guest',
+        guest_email: 'new@example.com',
+        check_in: formatDate(addDays(checkIn, -1)),
+        check_out: formatDate(addDays(checkOut, 1)),
+      });
+    }).toThrow('overlap');
+  });
+
+  it('should allow a booking that ends exactly on the existing check-in (no overlap)', () => {
+    const booking = createBooking({
+      room_id: 1,
+      guest_name: 'New Guest',
+      guest_email: 'new@example.com',
+      check_in: formatDate(tomorrow),
+      check_out: formatDate(checkIn), // ends when existing starts
+    });
+
+    expect(booking).toBeDefined();
+    expect(booking.id).toBeDefined();
+  });
+
+  it('should allow a booking that starts exactly on the existing check-out (no overlap)', () => {
+    const booking = createBooking({
+      room_id: 1,
+      guest_name: 'New Guest',
+      guest_email: 'new@example.com',
+      check_in: formatDate(checkOut), // starts when existing ends
+      check_out: formatDate(addDays(checkOut, 3)),
+    });
+
+    expect(booking).toBeDefined();
+    expect(booking.id).toBeDefined();
+  });
+
+  it('should allow overlapping dates on a different room', () => {
+    const booking = createBooking({
+      room_id: 2,
+      guest_name: 'New Guest',
+      guest_email: 'new@example.com',
+      check_in: formatDate(checkIn),
+      check_out: formatDate(checkOut),
+    });
+
+    expect(booking).toBeDefined();
+    expect(booking.id).toBeDefined();
+  });
+});
