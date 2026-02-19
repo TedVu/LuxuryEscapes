@@ -20,10 +20,28 @@ export function BookingForm({ room, onSuccess }: BookingFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  function handleCheckInChange(value: string) {
+    setCheckIn(value);
+    // If check-out is on or before the new check-in, push it to the day after
+    if (checkOut <= value) {
+      setCheckOut(format(addDays(new Date(value), 1), 'yyyy-MM-dd'));
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSuccess(false);
+
+    if (checkIn < today) {
+      setError('Check-in date must be today or later.');
+      return;
+    }
+    if (checkOut <= checkIn) {
+      setError('Check-out date must be after the check-in date.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -85,7 +103,8 @@ export function BookingForm({ room, onSuccess }: BookingFormProps) {
             type="date"
             id="checkIn"
             value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
+            min={today}
+            onChange={(e) => handleCheckInChange(e.target.value)}
             required
             disabled={submitting}
           />
@@ -97,6 +116,7 @@ export function BookingForm({ room, onSuccess }: BookingFormProps) {
             type="date"
             id="checkOut"
             value={checkOut}
+            min={format(addDays(new Date(checkIn), 1), 'yyyy-MM-dd')}
             onChange={(e) => setCheckOut(e.target.value)}
             required
             disabled={submitting}
