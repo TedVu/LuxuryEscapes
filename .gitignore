@@ -1,0 +1,40 @@
+# Dependencies
+/node_modules
+/jspm_packages
+
+backend/node_modules
+frontend/node_modules
+
+# Optional npm cache files
+.npm
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Environment
+.env
+.env.test
+
+# Editors and OS files
+.DS_Store # Mac
+Thumbs.db # Windows
+*.suo
+*.user
+*.cas
+*.sdf
+*.vssscc
+*.vspscc
+*.lnks
+
+# Build artifacts
+/dist
+/build
+/coverage
